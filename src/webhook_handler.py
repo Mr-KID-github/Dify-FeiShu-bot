@@ -91,7 +91,11 @@ def handle_message_received_v2(event):
         user=user_id,
     )
 
-    complete_answer_call_dify_workflow = ""                         # 初始化变量
+
+    complete_answer_call_dify_workflow = ""  # 初始化变量
+    accumulated_data = []  # 用于存储积累的数据块
+    batch_size = 20  # 定义每批次的大小
+
     if response_call_dify_workflow.status_code == 200:              # 判断 API 调用是否成功
         for line in response_call_dify_workflow.iter_lines():       # 流式 API 返回的数据
             if line:                                                # 判断是否有数据
@@ -101,15 +105,29 @@ def handle_message_received_v2(event):
                         data = json.loads(decoded_line[5:])         # 解析 JSON 数据
                         if "answer" in data:
                             complete_answer_call_dify_workflow += data["answer"]
-                            feishu_api.update_message(message_id, None, "reply_message_card", template_variables={
-                                "answer": complete_answer_call_dify_workflow,
-                                "nextQ_A": "课程价格是否可以优惠？",
-                                "nextQ_B": "邹老师的联系方式是什么？",
-                                "nextQ_C": "周六的课程具体时间是什么？",
-                            })
-                            logger.info(data["answer"])
+
+                            accumulated_data.append(data["answer"])  # 将数据添加到累积数据列表
+                            # 如果累积的数据达到批次大小，则进行一次更新
+                            if len(accumulated_data) >= batch_size:
+                                feishu_api.update_message(message_id, None, "reply_message_card", template_variables={
+                                    "answer": complete_answer_call_dify_workflow,
+                                    "nextQ_A": "课程价格是否可以优惠？",
+                                    "nextQ_B": "邹老师的联系方式是什么？",
+                                    "nextQ_C": "周六的课程具体时间是什么？",
+                                })
+                                accumulated_data = []  # 清空累积数据列表
+                                logger.info(complete_answer_call_dify_workflow)
                     except json.JSONDecodeError:
                         logger.error("Failed to decode JSON line")
     else:
         logger.error(f"Error: {response_call_dify_workflow.status_code}")
         logger.error(f"Response: {response_call_dify_workflow.text}")
+    # 处理剩余的累积数据
+    if accumulated_data:
+        feishu_api.update_message(message_id, None, "reply_message_card", template_variables={
+            "answer": complete_answer_call_dify_workflow,
+            "nextQ_A": "课程价格是否可以优惠？",
+            "nextQ_B": "邹老师的联系方式是什么？",
+            "nextQ_C": "周六的课程具体时间是什么？",
+        })
+        logger.info(complete_answer_call_dify_workflow)
