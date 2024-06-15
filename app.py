@@ -4,11 +4,19 @@ from flask import Flask, request, jsonify
 from src.DifyAPI import call_dify_workflow
 import json
 import uuid
+
+from dotenv import load_dotenv, find_dotenv
+import os
+
 app = Flask(__name__)
 
-# 配置你的飞书机器人应用的 App ID 和 App Secret
-APP_ID = 'cli_a6e16d43c1f0100c'
-APP_SECRET = 'cA09Dt44pfUNzk6I9c3CveqDRaLvbxKA'
+# 加载 .env 文件
+dotenv_path = find_dotenv(filename='.env', raise_error_if_not_found=True)
+load_dotenv(dotenv_path)
+
+# 从环境变量中获取 API 密钥
+APP_ID = os.getenv('APP_ID')
+APP_SECRET = os.getenv('APP_SECRET')
 
 def convert_to_uuid(original_id):
     try:
