@@ -13,6 +13,10 @@ class FeishuAPI:
         self.APP_ID = os.getenv('APP_ID')
         self.APP_SECRET = os.getenv('APP_SECRET')
 
+        # 从环境变量中获取卡片模板
+        feishu_card_templates_str = os.getenv('FEISHU_CARD_TEMPLATES')
+        self.FEISHU_CARD_TEMPLATES = json.loads(feishu_card_templates_str)
+    
     def get_access_token(self):
         url = 'https://open.feishu.cn/open-apis/auth/v3/app_access_token/internal'
         headers = {
@@ -26,17 +30,34 @@ class FeishuAPI:
         response_data = response.json()
         return response_data['app_access_token']
 
-    def send_message(self, chat_id, content):
+    def send_message(self, chat_id, content, card_template_name=None, template_variables=None):
         access_token = self.get_access_token()
-        url = 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id'
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json; charset=utf-8'
-        }
-        payload = {
-            'receive_id': chat_id,
-            'msg_type': 'interactive',
-            'content': json.dumps({
+
+        # Check if a card template is available for the message
+        if card_template_name:
+            card_template = self.FEISHU_CARD_TEMPLATES.get(card_template_name)
+            if not card_template:
+                logger.warning(f"No card template found for name: {card_template_name}, using default message.")
+                card_template_name = None  # Reset to use default message
+            else:
+                # Set template variables if provided
+                if template_variables:
+                    for key, value in template_variables.items():
+                        card_template['template_variable'][key] = value
+                
+                # Construct the template content
+                card_content = {
+                    "type": "template",
+                    "data": {
+                        "template_id": card_template["template_id"],
+                        "template_variable": card_template["template_variable"]
+                    }
+                }
+                payload_content = json.dumps(card_content)
+
+        if not card_template_name:
+            # Default content if no template is used
+            payload_content = json.dumps({
                 "config": {
                     "wide_screen_mode": True
                 },
@@ -69,20 +90,50 @@ class FeishuAPI:
                     }
                 ]
             })
-        }
-        response = requests.post(url, json=payload, headers=headers)
-        print(f"Send Message Card response: {response.text}")
-        return response.json()
-
-    def update_message(self, message_id, content):
-        access_token = self.get_access_token()
-        url = f'https://open.feishu.cn/open-apis/im/v1/messages/{message_id}'
+        url = 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id'
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json; charset=utf-8'
         }
         payload = {
-            'content': json.dumps({
+            'receive_id': chat_id,
+            'msg_type': 'interactive',
+            'content': payload_content
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"Send Message Card response: {response.text}")
+        return response.json()
+
+    # Update a message card with new content
+    def update_message(self, message_id, content=None, card_template_name=None, template_variables=None):
+        access_token = self.get_access_token()
+
+        # Check if a card template is available for the message
+        if card_template_name:
+            card_template = self.FEISHU_CARD_TEMPLATES.get(card_template_name)
+            if not card_template:
+                logger.warning(f"No card template found for name: {card_template_name}, using default message.")
+                card_template_name = None  # Reset to use default message
+            else:
+                # Set template variables if provided
+                if template_variables:
+                    for key, value in template_variables.items():
+                        card_template['template_variable'][key] = value
+                
+                # Construct the template content
+                card_content = {
+                    "type": "template",
+                    "data": {
+                        "template_id": card_template["template_id"],
+                        "template_variable": card_template["template_variable"]
+                    }
+                }
+                payload_content = json.dumps(card_content)
+
+        if not card_template_name:
+            # Default content if no template is used
+            payload_content = json.dumps({
                 "config": {
                     "wide_screen_mode": True
                 },
@@ -90,7 +141,7 @@ class FeishuAPI:
                     {
                         "tag": "div",
                         "text": {
-                            "content": f"{content}",
+                            "content": f"I received your message: {content}",
                             "tag": "lark_md"
                         }
                     },
@@ -115,6 +166,14 @@ class FeishuAPI:
                     }
                 ]
             })
+
+        url = f'https://open.feishu.cn/open-apis/im/v1/messages/{message_id}'
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        payload = {
+            'content': payload_content
         }
         response = requests.patch(url, json=payload, headers=headers)
         print(f"Update Message Card response: {response.text}")
