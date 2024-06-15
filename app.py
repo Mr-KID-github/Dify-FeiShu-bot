@@ -1,12 +1,20 @@
 import requests
 from flask import Flask, request, jsonify
 # 引入DifyAPI
-from src.DifyAPI import call_dify_workflow
+from src.APIs.Dify.DifyAPI import call_dify_workflow
 import json
 import uuid
-
 from dotenv import load_dotenv, find_dotenv
 import os
+
+from src.logger_setup import setup_logger   # 导入日志设置
+# from src.utils import Utils                 # 导入工具类
+
+# 设置日志记录
+logger = setup_logger()
+
+# 使用logger.info等来记录日志
+logger.info("日志系统已配置，现在开始记录日志。")
 
 app = Flask(__name__)
 
@@ -18,14 +26,6 @@ load_dotenv(dotenv_path)
 APP_ID = os.getenv('APP_ID')
 APP_SECRET = os.getenv('APP_SECRET')
 
-def convert_to_uuid(original_id):
-    try:
-        # Create a UUID from the original string (only works if the original string is a valid UUID format)
-        new_uuid = uuid.UUID(original_id)
-        return str(new_uuid)
-    except ValueError:
-        # If the original string is not a valid UUID format, generate a new UUID
-        return str(uuid.uuid4())
 
 # 获取飞书 API 的访问令牌
 def get_access_token():
@@ -197,10 +197,16 @@ def handle_event_v2(event_id, event_type, data):
         handle_user_group_created_v2(data["event"])
     elif event_type == "im.message.receive_v1":
         handle_message_received_v2(data["event"])       # 处理消息事件
+    # 用户和机器人的会话首次被创建
+    elif event_type == "p2p_chat_create":
+        handle_p2p_chat_create_v1(data["event"])
 
 def handle_p2p_chat_create_v1(event):
     print(f"Handling v1.0 p2p chat create event: {event}")
     # 添加事件处理逻辑
+    # 发送初始消息卡片
+    initial_content = "Handling v1.0 p2p chat create event"
+    message_response = send_message(chat_id, initial_content)       # 发送消息
 
 def handle_user_group_created_v2(event):
     print(f"Handling v2.0 user group created event: {event}")
