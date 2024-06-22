@@ -209,9 +209,9 @@ class FeishuAPI:
                 print(file_path)
                 # 调用oss上传服务器
                 # 创建OSSManager实例
-                access_key_id = 'LTAI5tS5YkBn4yHHFkYNydea'
-                access_key_secret = '6U1eJsGb0ivlSfA6CJbQuVLHLcAIhJ'
-                endpoint = 'https://oss-cn-shenzhen.aliyuncs.com'  # 深圳节点的Endpoint
+                access_key_id = os.getenv('ACCESS_KEY_ID')
+                access_key_secret = os.getenv('ACCESS_KEY_SECRET')
+                endpoint = os.getenv('ENDPOINT')
                 bucket_name = 'bucket-feishu'
                 oss_manager = OSSManager(access_key_id, access_key_secret, endpoint, bucket_name)
 
