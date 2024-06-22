@@ -3,9 +3,12 @@ from oss2 import ObjectIterator
 import os
 
 # TODO 放入环境变量
-access_key_id = 'LTAI5tS5YkBn4yHHFkYNydea'
-access_key_secret = '6U1eJsGb0ivlSfA6CJbQuVLHLcAIhJ'
-endpoint = 'https://oss-cn-shenzhen.aliyuncs.com'  # 深圳节点的Endpoint
+# 加载 .env 文件
+load_dotenv()
+
+access_key_id = os.getenv('ACCESS_KEY_ID')
+access_key_secret = os.getenv('ACCESS_KEY_SECRET')
+endpoint = os.getenv('ENDPOINT')
 bucket_name = 'bucket-feishu'
 
 
