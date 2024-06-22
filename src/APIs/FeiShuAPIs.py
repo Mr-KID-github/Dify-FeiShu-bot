@@ -182,3 +182,23 @@ class FeishuAPI:
         except requests.exceptions.JSONDecodeError:
             print("Failed to decode JSON response")
             return response.text
+    
+    def download_file(self, message_id, file_key, type):
+        print("开始下载文件")
+        access_token = self.get_access_token()
+        url = f'https://open.feishu.cn/open-apis/im/v1/messages/{message_id}/resources/{file_key}?type={type}'
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+        response = requests.get(url, headers=headers)
+        print("response是这个：", response)
+        if response.status_code == 200:
+            # 假设下载的是视频文件，根据实际情况调整文件扩展名
+            file_name = f"{file_key}.mp4"  
+            with open(file_name, 'wb') as f:
+                f.write(response.content)
+            print(f"File downloaded successfully as {file_name}")
+            return file_name
+        else:
+            print(f"Failed to download file. Status code: {response.status_code}, Response: {response.text}")
+            return None
