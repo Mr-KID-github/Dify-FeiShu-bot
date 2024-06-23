@@ -158,22 +158,22 @@ def handle_message_received_v2(event):
     
     if (event['message']['message_type'] == "media") :
         logger.info("接收到的消息是个文件📃，调用下载文件接口")
-        try:
-            message_id = event['message']['message_id']
-            if event['message']['message_type'] == "media":
-                message_type = "file"
-            else:
-                message_type = "image"
-            content = json.loads(event['message']['content'])  # 解析JSON字符串
-            file_key = content['file_key']
-            print("----------------")
-            feishu_api.download_file(message_id, file_key, message_type)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON content: {e}")
-        except KeyError as e:
-            logger.error(f"Error: missing key {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
+        # try:
+        #     message_id = event['message']['message_id']
+        #     if event['message']['message_type'] == "media":
+        #         message_type = "file"
+        #     else:
+        #         message_type = "image"
+        #     content = json.loads(event['message']['content'])  # 解析JSON字符串
+        #     file_key = content['file_key']
+        #     print("----------------")
+        #     feishu_api.download_file(message_id, file_key, message_type)
+        # except json.JSONDecodeError as e:
+        #     logger.error(f"Error decoding JSON content: {e}")
+        # except KeyError as e:
+        #     logger.error(f"Error: missing key {e}")
+        # except Exception as e:
+        #     logger.error(f"Unexpected error: {e}")
     
     else:
         try:

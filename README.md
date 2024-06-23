@@ -10,3 +10,7 @@ Dify-FeiShu-bot是一个使用python Flask框架编写的后端，可以非常�
 ```shell 
 export FLASK_ENV=development
 ```
+
+# 特点：
+1. 非常方便创建bot；
+2. 非常方便创建消息卡片；
