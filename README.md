@@ -8,6 +8,70 @@ Dify-FeiShu-bot是一个使用python FastAPI框架编写的后端，可以非常
 1. 非常方便创建bot；
 2. 非常方便创建消息卡片；
 
+# 如何创建机器人：
+创建机器人🤖从来没有如此简单。
+
+1. 定义你自己的机器人（主要是定义机器人的消息回调事件）
+
+    以Dify机器人为例：在`src/Bots`文件夹📁下，新建`bot_dify.py`文件，并依据`bot_example.py`官方示例，重写你的机器人的消息回调方法。
+
+    ```python
+    # 重写Bot的消息回调方法
+    from src.feishu_bot import FeishuBot
+    from src.logger_setup import setup_logger
+
+    # 设置日志
+    logger = setup_logger()
+
+    # 定义ExampleBot类，继承FeishuBot
+    class ExampleBot(FeishuBot):
+        def __init__(self, name: str):
+            super().__init__(name)
+
+        # 重写需要的事件处理方法
+        async def handle_v1_0_p2p_chat_create(self, event_id: str, event: dict):
+            logger.info(f"ExampleBot handling v1.0 p2p chat create event: {event}")
+            # 添加你的处理逻辑
+
+        async def handle_v2_0_im_message_receive_v1(self, event_id: str, event: dict):
+            logger.info(f"ExampleBot handling v2.0 message received event: {event}")
+            # 添加你的处理逻辑
+    ```
+
+    目前支持重写的消息回调的方法有：
+
+    | 回调事件名称             | 版本   | 事件类型                       | 事件回调方法                          |
+    |--------------------------|--------|--------------------------------|---------------------------------------|
+    | 用户和机器人的会话首次被创建 | v1.0   | p2p_chat_create                | handle_v1_0_p2p_chat_create           |
+    | 接收消息                 | v2.0   | im.message.receive_v1          | handle_v2_0_im_message_receive_v1     |
+    | 机器人自定义菜单事件     | v2.0   | application.bot.menu_v6        | handle_v2_0_application_bot_menu_v6   |
+    | 卡片回传交互             | v2.0   | card.action.trigger            | handle_v2_0_card_action_trigger       |
+
+    如果有其他需求，希望在项目中添加一个新功能，但当前项目中还没有这个功能，你可以通过创建一个Issue和Pull Request来提出这个需求。
+
+2. 在项目根目录下的main.py文件里导入刚才定义的机器人，并创建机器人的路由，用于后续的事件回调配置：
+
+    ```python
+    # src/main.py
+    from fastapi import FastAPI
+    from src.feishu_bot import FeishuBot
+    from src.Bots.bot_dify import DifyBot
+    app = FastAPI()
+
+    # 创建多个飞书机器人实例并注册其路由
+    # example_bot = ExampleBot(name="ExampleBot")
+    # app.include_router(example_bot.router, prefix="/example_bot")  # 路由实际的访问路径将变成'/example_bot/webhook'
+
+    # 以dify机器人为例
+    dify_bot = DifyBot(name="dify")
+    app.include_router(dify_bot.router, prefix="/dify") # 路由实际的访问路径将变成'/dify/webhook'
+
+    if __name__ == "__main__":
+        import uvicorn      
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+    ```
+
+
 # 安装运行
 1. 克隆项目
     ```bash

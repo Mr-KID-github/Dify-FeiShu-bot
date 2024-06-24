@@ -68,25 +68,6 @@ class FeishuAPI:
                             "content": f"I received your message: {content}",
                             "tag": "lark_md"
                         }
-                    },
-                    {
-                        "tag": "hr"
-                    },
-                    {
-                        "tag": "action",
-                        "actions": [
-                            {
-                                "tag": "button",
-                                "text": {
-                                    "content": "Update",
-                                    "tag": "plain_text"
-                                },
-                                "type": "default",
-                                "value": {
-                                    "key": "update_key"
-                                }
-                            }
-                        ]
                     }
                 ]
             })
@@ -134,41 +115,22 @@ class FeishuAPI:
         except Exception as e:
             logger.error(f"Error: missing key {e}") 
 
-        # if not card_template_name:
-        #     # Default content if no template is used
-        #     payload_content = json.dumps({
-        #         "config": {
-        #             "wide_screen_mode": True
-        #         },
-        #         "elements": [
-        #             {
-        #                 "tag": "div",
-        #                 "text": {
-        #                     "content": f"I received your message: {content}",
-        #                     "tag": "lark_md"
-        #                 }
-        #             },
-        #             {
-        #                 "tag": "hr"
-        #             },
-        #             {
-        #                 "tag": "action",
-        #                 "actions": [
-        #                     {
-        #                         "tag": "button",
-        #                         "text": {
-        #                             "content": "Update",
-        #                             "tag": "plain_text"
-        #                         },
-        #                         "type": "default",
-        #                         "value": {
-        #                             "key": "update_key"
-        #                         }
-        #                     }
-        #                 ]
-        #             }
-        #         ]
-        #     })
+        if not card_template_name:
+            # Default content if no template is used
+            payload_content = json.dumps({
+                "config": {
+                    "wide_screen_mode": True
+                },
+                "elements": [
+                    {
+                        "tag": "div",
+                        "text": {
+                            "content": f"This is my answer: {content}",
+                            "tag": "lark_md"
+                        }
+                    }
+                ]
+            })
 
         url = f'https://open.feishu.cn/open-apis/im/v1/messages/{message_id}'
         headers = {

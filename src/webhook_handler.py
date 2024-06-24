@@ -53,9 +53,7 @@ def handle_event_v1(event_id, event_type, data):
 # 处理不同版本的事件, v2.0 版本的事件处理
 def handle_event_v2(event_id, event_type, data):
     logger.info(f"Received v2.0 event: {event_type}, id: {event_id}")
-    if event_type == "contact.user_group.created_v3":
-        handle_user_group_created_v2(data["event"])
-    elif event_type == "im.message.receive_v1":
+    if event_type == "im.message.receive_v1":
         handle_message_received_v2(data["event"])
     elif event_type == "p2p_chat_create":
         handle_p2p_chat_create_v1(data["event"])

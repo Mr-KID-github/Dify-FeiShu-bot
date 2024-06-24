@@ -7,6 +7,7 @@ from src.APIs.DifyAPIs import call_dify_workflow  # 调用Dify工作流API
 from src.APIs.FeiShuAPIs import FeishuAPI  # 飞书API的封装
 from src.logger_setup import setup_logger  # 日志设置
 from fastapi.responses import JSONResponse
+import asyncio
 
 # 初始化FeishuAPI实例
 feishu_api = FeishuAPI()
@@ -20,32 +21,20 @@ class FeishuBot:
         # 初始化FeishuBot实例
         self.name = name                                        # 机器人的名称
         self.router = APIRouter()                               # 创建APIRouter实例，用于定义路由
-        self.router.post("/webhook")(self.handle_webhook)       # 注册处理Webhook的路由
         self.router.post("/webhook/event")(self.handle_event)   # 注册处理事件的路由
-
-    
-    async def handle_webhook(self, request: Request, background_tasks: BackgroundTasks):    
-        data = await request.json()
-        logger.info(f"Received webhook: {data}")
-        if 'challenge' in data:
-            return {"challenge": data['challenge']}
-        background_tasks.add_task(self.process_webhook, data)
-        return JSONResponse(content={"status": "received"}, status_code=200)
-
-    async def process_webhook(self, data: dict):
-        logger.info(f"Processing webhook data: {data}")
-        if 'event' in data:
-            event_type = data['event'].get('type')
-            logger.info(f"Event type: {event_type}")
-            await self.handle_event(data['event'])
 
     async def handle_event(self, request: Request, background_tasks: BackgroundTasks):
         data = await request.json()
         logger.info(f"Received event: {data}")
         if 'challenge' in data:
             return {"challenge": data['challenge']}
-        background_tasks.add_task(self.process_event, data)
+        background_tasks.add_task(self.process_event_sync, data)
+        logger.info("已经添加了一个任务到后台任务队列中，立即返回200状态码防止飞书消息重发")
         return JSONResponse(content={"status": "received"}, status_code=200)
+
+    def process_event_sync(self, data: dict):
+        # 使用 asyncio.run 执行异步方法
+        asyncio.run(self.process_event(data))
 
     async def process_event(self, data: dict):
         logger.info(f"Processing event data: {data}")
@@ -69,23 +58,22 @@ class FeishuBot:
         else:
             logger.warning(f"No handler found for event: {event_type} in version: {version}")
 
-    # 默认事件处理方法，子类可以重写这些方法
+    # 默认处理用户和机器人的会话首次被创建事件，子类可以重写这些方法
     async def handle_v1_0_p2p_chat_create(self, event_id: str, event: dict):
         logger.info(f"Handling v1.0 p2p chat create event: {event}")
         # 默认处理逻辑
 
-    async def handle_v2_0_contact_user_group_created_v3(self, event_id: str, event: dict):
-        logger.info(f"Handling v2.0 user group created event: {event}")
-        # 默认处理逻辑
-
+    # 默认处理消息接收事件，子类可以重写这些方法
     async def handle_v2_0_im_message_receive_v1(self, event_id: str, event: dict):
         logger.info(f"Handling v2.0 message received event: {event}")
         # 默认处理逻辑
 
+    # 默认处理应用菜单事件，子类可以重写这些方法
     async def handle_v2_0_application_bot_menu_v6(self, event_id: str, event: dict):
         logger.info(f"Handling v2.0 application bot menu event: {event}")
         # 默认处理逻辑
 
+    # 默认处理消息卡片操作触发事件，子类可以重写这些方法
     async def handle_v2_0_card_action_trigger(self, event_id: str, event: dict):
         logger.info(f"Handling card action trigger event: {event}")
         # 默认处理逻辑
