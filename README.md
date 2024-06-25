@@ -4,6 +4,10 @@ Dify-FeiShu-bot是一个使用python FastAPI框架编写的后端，可以非常
 
 ![墨趣书法Agent展示效果图](./static/images/墨趣书法Agent展示效果图.png)
 
+项目展示地址：
+【【墨趣书法大管家】小B端智能伙伴 ｜ 极客公园&飞书hAIkathon、Dify...-哔哩哔哩】 https://b23.tv/lCiSikf
+后续会更新教程，喜欢的话可以点个🌟➕持续关注
+
 # 项目特点：
 1. 非常方便创建bot；
 2. 非常方便创建消息卡片；
