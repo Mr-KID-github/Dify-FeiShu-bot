@@ -157,3 +157,9 @@ Dify-FeiShu-bot是一个使用python FastAPI框架编写的后端，可以非常
 export APP_ENV=development
 ```
 这个是以开发环境运行应用的意思。详情🔎请见：[关于start.sh脚本启动应用](./docs/关于start.sh脚本启动应用.md)
+
+## 许可证
+本项目采用MIT License。详细信息请见[LICENSE](./LICENSE)。
+
+如何贡献
+欢迎提交Issue和Pull Request来提出需求和改进建议。详细的贡献指南请见：[CONTRIBUTING.md](./docs/CONTRIBUTING.md)。
